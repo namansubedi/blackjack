@@ -35,6 +35,10 @@ public class BlackjackGame extends JFrame {
     private JLabel avatarLabel;
     private static final int AVATAR_SIZE = 80;  // pixels
 
+    private JComboBox<String> deckSelector;
+    private int numberOfDecks = 1;
+    private JLabel deckCountLabel;
+
     public BlackjackGame() {
         // Set up the main window
         setTitle("Blackjack");
@@ -98,6 +102,7 @@ public class BlackjackGame extends JFrame {
 
         // Add avatar UI before other components
         setupAvatarUI();
+        setupDeckSelectorUI();
     }
 
     private void setupBettingUI() {
@@ -167,19 +172,6 @@ public class BlackjackGame extends JFrame {
         });
     }
 
-    private void initializeDeck() {
-        deck.clear();
-        String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
-        String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
-
-        for (String suit : suits) {
-            for (String rank : ranks) {
-                deck.add(new Card(suit, rank));
-            }
-        }
-        Collections.shuffle(deck);
-    }
-
     private void dealButtonClicked() {
         // Clear hands and reset UI
 
@@ -188,6 +180,7 @@ public class BlackjackGame extends JFrame {
         for (Component c : betButtonPanel.getComponents()) {
             c.setEnabled(false);
         }
+        deckSelector.setEnabled(false);  // Disable deck selection while playing
         playerHand.clear();
         dealerHand.clear();
         dealerPanel.removeAll();
@@ -334,6 +327,8 @@ public class BlackjackGame extends JFrame {
             c.setEnabled(true);
         }
 
+        deckSelector.setEnabled(true);  // Re-enable deck selection
+
         JOptionPane.showMessageDialog(this, message);
         enableGameButtons(false);
         dealButton.setEnabled(false); // Don't enable deal until new bet is placed
@@ -391,5 +386,69 @@ public class BlackjackGame extends JFrame {
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
         
         avatarLabel.setIcon(scaledIcon);
+    }
+
+    private void setupDeckSelectorUI() {
+        // Create deck selector panel in top left
+        JPanel deckPanel = new JPanel(new BorderLayout(5, 5));
+        deckPanel.setBackground(new Color(0, 100, 0));
+        
+        // Create deck count label
+        deckCountLabel = new JLabel("Current Deck(s): 1");
+        deckCountLabel.setForeground(Color.WHITE);
+        deckCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Create deck selector
+        String[] deckOptions = {"1 Deck", "2 Decks", "4 Decks", "6 Decks"};
+        deckSelector = new JComboBox<>(deckOptions);
+        deckSelector.setPreferredSize(new Dimension(100, 25));
+        
+        // Add change listener
+        deckSelector.addActionListener(e -> {
+            // Only allow changes if no cards are dealt
+            if (!betPlaced) {
+                numberOfDecks = Integer.parseInt(((String)deckSelector.getSelectedItem()).split(" ")[0]);
+                deckCountLabel.setText("Current Deck(s): " + numberOfDecks);
+                initializeDeck(); // Reinitialize with new deck count
+            } else {
+                // Reset selection if cards are dealt
+                deckSelector.setSelectedIndex(getIndexForDeckCount(numberOfDecks));
+            }
+        });
+        
+        // Add components to deck panel
+        deckPanel.add(deckCountLabel, BorderLayout.CENTER);
+        deckPanel.add(deckSelector, BorderLayout.SOUTH);
+        
+        // Update the top panel to include deck selector
+        JPanel topPanel = (JPanel)mainPanel.getComponent(0); // Get existing top panel
+        topPanel.add(deckPanel, BorderLayout.WEST);
+    }
+    
+    // Helper method to get combo box index from deck count
+    private int getIndexForDeckCount(int decks) {
+        switch(decks) {
+            case 2: return 1;
+            case 4: return 2;
+            case 6: return 3;
+            default: return 0;
+        }
+    }
+
+    // Modify initializeDeck() to handle multiple decks
+    private void initializeDeck() {
+        deck.clear();
+        String[] suits = {"Hearts", "Diamonds", "Clubs", "Spades"};
+        String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
+        
+        // Add cards for each deck
+        for (int d = 0; d < numberOfDecks; d++) {
+            for (String suit : suits) {
+                for (String rank : ranks) {
+                    deck.add(new Card(suit, rank));
+                }
+            }
+        }
+        Collections.shuffle(deck);
     }
 }
