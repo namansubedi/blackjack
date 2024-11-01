@@ -31,6 +31,10 @@ public class BlackjackGame extends JFrame {
 
     private JPanel buttonPanel;
 
+    private JComboBox<String> avatarSelector;
+    private JLabel avatarLabel;
+    private static final int AVATAR_SIZE = 80;  // pixels
+
     public BlackjackGame() {
         // Set up the main window
         setTitle("Blackjack");
@@ -91,6 +95,9 @@ public class BlackjackGame extends JFrame {
 
         add(mainPanel);
         initializeDeck();
+
+        // Add avatar UI before other components
+        setupAvatarUI();
     }
 
     private void setupBettingUI() {
@@ -335,5 +342,54 @@ public class BlackjackGame extends JFrame {
     private void enableGameButtons(boolean enabled) {
         hitButton.setEnabled(enabled);
         standButton.setEnabled(enabled);
+    }
+
+    private void setupAvatarUI() {
+        // Create avatar panel in top right
+        JPanel avatarPanel = new JPanel(new BorderLayout(5, 5));
+        avatarPanel.setBackground(new Color(0, 100, 0));
+        
+        // Create avatar label
+        avatarLabel = new JLabel();
+        updateAvatarImage(1);  // Start with first avatar
+        
+        // Create avatar selector
+        String[] avatarOptions = new String[12];
+        for (int i = 0; i < 12; i++) {
+            avatarOptions[i] = "Avatar " + (i + 1);
+        }
+        avatarSelector = new JComboBox<>(avatarOptions);
+        avatarSelector.setPreferredSize(new Dimension(100, 25));
+        
+        // Add change listener
+        avatarSelector.addActionListener(e -> {
+            int selected = avatarSelector.getSelectedIndex() + 1;
+            updateAvatarImage(selected);
+        });
+        
+        // Add components to avatar panel
+        avatarPanel.add(avatarLabel, BorderLayout.CENTER);
+        avatarPanel.add(avatarSelector, BorderLayout.SOUTH);
+        
+        // Create a wrapper panel for dealer area that includes avatar
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(new Color(0, 100, 0));
+        topPanel.add(dealerPanel, BorderLayout.CENTER);
+        topPanel.add(avatarPanel, BorderLayout.EAST);
+        
+        // Update main panel to use new top panel
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+    }
+    
+    // Method to update avatar image
+    private void updateAvatarImage(int avatarNumber) {
+        ImageIcon originalIcon = new ImageIcon("avatar/p" + avatarNumber + ".png");
+        Image image = originalIcon.getImage();
+        
+        // Scale image to desired size while maintaining aspect ratio
+        Image scaledImage = image.getScaledInstance(AVATAR_SIZE, AVATAR_SIZE, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        
+        avatarLabel.setIcon(scaledIcon);
     }
 }
