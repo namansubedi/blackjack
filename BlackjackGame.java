@@ -255,24 +255,43 @@ public class BlackjackGame extends JFrame {
     private int calculateScore(ArrayList<Card> hand, boolean dealerHidden) {
         int score = 0;
         int aces = 0;
-
+        int jokers = 0;
+        
         // For dealer's hand, skip the last card (hole card) if it's still hidden
         int cardCount = dealerHidden && hand == dealerHand ? hand.size() - 1 : hand.size();
-
+        
+        // First pass: count non-Ace, non-Joker cards
         for (int i = 0; i < cardCount; i++) {
             Card card = hand.get(i);
             if (card.getRank().equals("Ace")) {
                 aces++;
+            } else if (card.isJoker()) {
+                jokers++;
+            } else {
+                score += card.getValue();
             }
-            score += card.getValue();
         }
-
-        // Adjust for aces
-        while (score > 21 && aces > 0) {
-            score -= 10;
-            aces--;
+        
+        // Second pass: optimize Joker values (1, 10, or 11)
+        for (int i = 0; i < jokers; i++) {
+            if (score <= 10) {
+                score += 11;  // Use 11 if it won't bust
+            } else if (score <= 19) {
+                score += 1;   // Use 1 if 11 would bust but still room for more
+            } else {
+                score += 1;   // Use 1 if close to 21
+            }
         }
-
+        
+        // Third pass: handle Aces after Jokers
+        for (int i = 0; i < aces; i++) {
+            if (score <= 10) {
+                score += 11;
+            } else {
+                score += 1;
+            }
+        }
+        
         return score;
     }
 
@@ -435,19 +454,22 @@ public class BlackjackGame extends JFrame {
         }
     }
 
-    // Modify initializeDeck() to handle multiple decks
+    // Modify initializeDeck() to include Jokers
     private void initializeDeck() {
         deck.clear();
         String[] suits = {"Hearts", "Diamonds", "Clubs", "Spades"};
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
         
-        // Add cards for each deck
+        // Add regular cards for each deck
         for (int d = 0; d < numberOfDecks; d++) {
             for (String suit : suits) {
                 for (String rank : ranks) {
                     deck.add(new Card(suit, rank));
                 }
             }
+            // Add two Jokers per deck
+            deck.add(new Card("Special", "Joker"));
+            deck.add(new Card("Special", "Joker"));
         }
         Collections.shuffle(deck);
     }

@@ -5,21 +5,26 @@ public class Card {
     private final String rank;
     private final int value;
     private final int imageNumber;
+    private final boolean isJoker;
     
     public Card(String suit, String rank) {
         this.suit = suit;
         this.rank = rank;
+        this.isJoker = rank.equals("Joker");
         this.value = calculateValue(rank);
         this.imageNumber = calculateImageNumber();
     }
     
     private int calculateValue(String rank) {
+        if (rank.equals("Joker")) return 11;
         if (rank.equals("Ace")) return 11;
         if (rank.equals("King") || rank.equals("Queen") || rank.equals("Jack")) return 10;
         return Integer.parseInt(rank);
     }
     
     private int calculateImageNumber() {
+        if (isJoker) return 54;
+        
         int suitOffset;
         switch (suit) {
             case "Spades": suitOffset = 0; break;
@@ -53,6 +58,10 @@ public class Card {
     
     public ImageIcon getCardImage() {
         return new ImageIcon("cards/"+ imageNumber + ".png");
+    }
+    
+    public boolean isJoker() {
+        return isJoker;
     }
     
     @Override
