@@ -2,7 +2,7 @@
 // import awt for the layout, and event for the event listeners
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+//import java.awt.event.*;
 import java.util.*;
 
 // main class for the blackjack game
